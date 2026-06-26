@@ -521,6 +521,14 @@ export default function Welcome() {
                     content="Rizki Syandana — Web Developer Specialist crafting fast, accessible, delightful websites."
                     head-key="description"
                 />
+                <link
+                    rel="preload"
+                    as="image"
+                    href="/portfolio/rizki.webp"
+                    type="image/webp"
+                    fetchPriority="high"
+                    head-key="hero-photo"
+                />
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link
                     rel="preconnect"
@@ -631,12 +639,19 @@ export default function Welcome() {
                             <div className="pf-photo-glow1" />
                             <div className="pf-photo-glow2" />
                             <div data-parallax="-0.018">
-                                <img
-                                    data-photo
-                                    src="/portfolio/rizki.png"
-                                    alt="Rizki Syandana, Web Developer Specialist"
-                                    className="pf-photo"
-                                />
+                                <picture>
+                                    <source srcSet="/portfolio/rizki.webp" type="image/webp" />
+                                    <img
+                                        data-photo
+                                        src="/portfolio/rizki.png"
+                                        alt="Rizki Syandana, Web Developer Specialist"
+                                        className="pf-photo"
+                                        width={1024}
+                                        height={1536}
+                                        fetchPriority="high"
+                                        decoding="async"
+                                    />
+                                </picture>
                             </div>
                         </div>
                     </div>

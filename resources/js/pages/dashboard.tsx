@@ -2013,7 +2013,7 @@ export default function Dashboard() {
                             )}
                         </div>
                         {showLabels && (
-                            <Link href="/" className="dash-live-link">
+                            <Link href="/" prefetch className="dash-live-link">
                                 View live site
                                 <svg {...svgProps(14, 2)}>
                                     <path d="M7 17L17 7M9 7h8v8" />
@@ -2023,6 +2023,7 @@ export default function Dashboard() {
                         {showLabels && (
                             <Link
                                 href="/dashboard/print"
+                                prefetch
                                 className="dash-live-link"
                                 style={{ marginTop: 10 }}
                             >
