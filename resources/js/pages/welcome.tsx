@@ -1,6 +1,14 @@
 import { Head } from '@inertiajs/react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import '../../css/portfolio.css';
+import type {
+    Profile,
+    Project,
+    Service,
+    Skill,
+    SocialLink,
+    Testimonial,
+} from '@/types/models';
 
 const navLinks = [
     { label: 'About', href: '#about', num: '01' },
@@ -10,190 +18,57 @@ const navLinks = [
     { label: 'Contact', href: '#contact', num: '05' },
 ];
 
-const ticker = [
-    'React',
-    'Next.js',
-    'TypeScript',
-    'Node.js',
-    'Tailwind CSS',
-    'Laravel',
-    'PostgreSQL',
-    'GraphQL',
-    'Docker',
-    'Vue',
-    'Express',
-    'Figma',
-];
-const tickerLoop = ticker.concat(ticker);
+const year = new Date().getFullYear();
 
-const stats = [
-    { value: 5, suffix: '+', label: 'Years building' },
-    { value: 40, suffix: '+', label: 'Projects shipped' },
-    { value: 32, suffix: '+', label: 'Happy clients' },
-    { value: 99, suffix: '%', label: 'On-time delivery' },
-];
+interface WelcomeProps {
+    profile: Profile | null;
+    projects: Project[];
+    skills: Skill[];
+    services: Service[];
+    testimonials: Testimonial[];
+    socials: SocialLink[];
+}
 
-const facts = [
-    { k: 'Location', v: 'Indonesia · Remote' },
-    { k: 'Experience', v: '5+ years' },
-    { k: 'Focus', v: 'Web apps & sites' },
-    { k: 'Status', v: 'Available' },
-];
-
-const skillGroups = [
-    {
-        title: 'Frontend',
-        items: [
-            'HTML5',
-            'CSS3',
-            'JavaScript',
-            'TypeScript',
-            'React',
-            'Next.js',
-            'Vue',
-            'Tailwind CSS',
-        ],
-    },
-    {
-        title: 'Backend',
-        items: ['Node.js', 'Express', 'PHP', 'Laravel', 'REST APIs', 'GraphQL'],
-    },
-    {
-        title: 'Database & Tools',
-        items: [
-            'PostgreSQL',
-            'MySQL',
-            'MongoDB',
-            'Git',
-            'Docker',
-            'Figma',
-            'Vercel',
-        ],
-    },
-];
-
-const projects = [
-    {
-        name: 'Nexus Commerce',
-        category: 'E-Commerce',
-        year: '2025',
-        desc: 'Headless storefront with sub-second loads and a custom checkout flow.',
-        tags: ['Next.js', 'Stripe', 'PostgreSQL'],
-        placeholder: 'Drop Nexus screenshot',
-    },
-    {
-        name: 'Lumina Analytics',
-        category: 'SaaS Dashboard',
-        year: '2025',
-        desc: 'Real-time analytics dashboard handling millions of events a day.',
-        tags: ['React', 'Node.js', 'WebSocket'],
-        placeholder: 'Drop Lumina screenshot',
-    },
-    {
-        name: 'Wander',
-        category: 'Travel Booking',
-        year: '2024',
-        desc: 'End-to-end booking experience with live maps and availability.',
-        tags: ['Vue', 'Laravel', 'MySQL'],
-        placeholder: 'Drop Wander screenshot',
-    },
-    {
-        name: 'Pulse Fitness',
-        category: 'Health & Fitness',
-        year: '2024',
-        desc: 'Mobile-first PWA with offline workouts and progress tracking.',
-        tags: ['React', 'PWA', 'IndexedDB'],
-        placeholder: 'Drop Pulse screenshot',
-    },
-    {
-        name: 'Verde Finance',
-        category: 'Fintech',
-        year: '2023',
-        desc: 'Personal finance app with secure bank integrations and budgets.',
-        tags: ['Next.js', 'Plaid', 'Prisma'],
-        placeholder: 'Drop Verde screenshot',
-    },
-    {
-        name: 'Orbit Studio',
-        category: 'Agency Site',
-        year: '2023',
-        desc: 'Award-style marketing site with rich, performant motion design.',
-        tags: ['Astro', 'GSAP', 'WebGL'],
-        placeholder: 'Drop Orbit screenshot',
-    },
-];
-
-const services = [
-    {
-        num: '01',
-        title: 'Web Development',
-        desc: 'Complete websites and web apps built from scratch — responsive, fast, and ready to scale.',
-        points: [
-            'Landing & marketing sites',
-            'Web applications',
-            'CMS integration',
-        ],
-    },
-    {
-        num: '02',
-        title: 'Frontend Engineering',
-        desc: 'Pixel-perfect interfaces with smooth interactions and rock-solid accessibility.',
-        points: ['Design-to-code', 'Component systems', 'Micro-interactions'],
-    },
-    {
-        num: '03',
-        title: 'Backend & APIs',
-        desc: 'Reliable server-side logic, databases, and APIs that quietly power your product.',
-        points: [
-            'REST & GraphQL APIs',
-            'Database design',
-            'Auth & integrations',
-        ],
-    },
-    {
-        num: '04',
-        title: 'Performance & SEO',
-        desc: 'Audits and optimization to make your site lightning fast and easy to find.',
-        points: ['Core Web Vitals', 'SEO foundations', 'Speed tuning'],
-    },
-];
-
-const testimonials = [
-    {
-        quote: 'Rizki turned our outdated site into a fast, modern platform. Conversions jumped 40% within two months.',
-        name: 'Sarah Lin',
-        role: 'Founder, Brightwave',
-        initials: 'SL',
-    },
-    {
-        quote: 'Clean code, clear communication, and delivered ahead of schedule. Exactly the developer you hope to find.',
-        name: 'Andre Pratama',
-        role: 'CTO, Lumina',
-        initials: 'AP',
-    },
-    {
-        quote: 'He understood our product better than we did. The new dashboard is genuinely a joy to use.',
-        name: 'Maria Gomez',
-        role: 'PM, Verde Finance',
-        initials: 'MG',
-    },
-];
-
-const socials = [
-    { label: 'GitHub', handle: 'github.com/rizkisyandana', href: '#' },
-    { label: 'LinkedIn', handle: 'in/rizkisyandana', href: '#' },
-    { label: 'Instagram', handle: '@rizki.dev', href: '#' },
-    {
-        label: 'Email',
-        handle: 'hello@rizki.dev',
-        href: 'mailto:hello@rizki.dev',
-    },
-];
-
-const year = 2026;
-
-export default function Welcome() {
+export default function Welcome({
+    profile,
+    projects,
+    skills,
+    services,
+    testimonials,
+    socials,
+}: WelcomeProps) {
     const rootRef = useRef<HTMLDivElement>(null);
+
+    const stats = profile?.stats ?? [];
+    const facts = profile?.facts ?? [];
+    const contactEmail = profile?.email ?? 'hello@rizki.dev';
+
+    // Group flat skills by category, preserving first-seen order.
+    const skillGroups = useMemo(() => {
+        const groups: Array<{ title: string; items: string[] }> = [];
+
+        for (const skill of skills) {
+            let group = groups.find((g) => g.title === skill.category);
+
+            if (!group) {
+                group = { title: skill.category, items: [] };
+                groups.push(group);
+            }
+
+            group.items.push(skill.name);
+        }
+
+        return groups;
+    }, [skills]);
+
+    // Doubled list of ticker skills for the seamless marquee loop.
+    const tickerLoop = useMemo(() => {
+        const ticker = skills
+            .filter((skill) => skill.inTicker)
+            .map((skill) => skill.name);
+
+        return ticker.concat(ticker);
+    }, [skills]);
 
     useEffect(() => {
         const root = rootRef.current;
@@ -640,7 +515,10 @@ export default function Welcome() {
                             <div className="pf-photo-glow2" />
                             <div data-parallax="-0.018">
                                 <picture>
-                                    <source srcSet="/portfolio/rizki.webp" type="image/webp" />
+                                    <source
+                                        srcSet="/portfolio/rizki.webp"
+                                        type="image/webp"
+                                    />
                                     <img
                                         data-photo
                                         src="/portfolio/rizki.png"
@@ -836,7 +714,9 @@ export default function Welcome() {
                     >
                         <span className="pf-eyebrow">02 / SELECTED WORK</span>
                         <span className="pf-rule" />
-                        <span className="pf-count-label">(06)</span>
+                        <span className="pf-count-label">
+                            ({projects.length.toString().padStart(2, '0')})
+                        </span>
                     </div>
                     <div data-reveal className="pf-section-head pf-work-head">
                         <h2 className="pf-h2">Selected projects.</h2>
@@ -848,17 +728,34 @@ export default function Welcome() {
                     <div className="pf-cards">
                         {projects.map((project) => (
                             <article
-                                key={project.name}
+                                key={project.id}
                                 data-reveal
                                 className="pf-card"
                             >
                                 <div className="pf-card-media">
-                                    <div className="pf-card-slot">
-                                        <span className="pf-card-slot-text">
-                                            <span>+</span>
-                                            {project.placeholder}
-                                        </span>
-                                    </div>
+                                    {project.imageUrl ? (
+                                        <img
+                                            src={project.imageUrl}
+                                            alt={project.title}
+                                            className="pf-card-img"
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                            }}
+                                        />
+                                    ) : (
+                                        <div className="pf-card-slot">
+                                            <span className="pf-card-slot-text">
+                                                <span>+</span>
+                                                Drop{' '}
+                                                {
+                                                    project.title.split(' ')[0]
+                                                }{' '}
+                                                screenshot
+                                            </span>
+                                        </div>
+                                    )}
                                     <div className="pf-card-badge pf-card-badge-cat">
                                         {project.category}
                                     </div>
@@ -869,12 +766,12 @@ export default function Welcome() {
                                 <div className="pf-card-body">
                                     <div className="pf-card-title-row">
                                         <h3 className="pf-card-title">
-                                            {project.name}
+                                            {project.title}
                                         </h3>
                                         <span className="pf-card-arrow">↗</span>
                                     </div>
                                     <p className="pf-card-desc">
-                                        {project.desc}
+                                        {project.description}
                                     </p>
                                     <div className="pf-tags">
                                         {project.tags.map((tag) => (
@@ -957,20 +854,20 @@ export default function Welcome() {
                         </p>
                     </div>
                     <div className="pf-service-grid">
-                        {services.map((service) => (
+                        {services.map((service, index) => (
                             <div
-                                key={service.num}
+                                key={service.id}
                                 data-reveal
                                 className="pf-service"
                             >
                                 <div className="pf-service-num">
-                                    {service.num}
+                                    {(index + 1).toString().padStart(2, '0')}
                                 </div>
                                 <h3 className="pf-service-title">
                                     {service.title}
                                 </h3>
                                 <p className="pf-service-desc">
-                                    {service.desc}
+                                    {service.description}
                                 </p>
                                 <div className="pf-points">
                                     {service.points.map((point) => (
@@ -1007,7 +904,7 @@ export default function Welcome() {
                         <div className="pf-testi-grid">
                             {testimonials.map((t) => (
                                 <figure
-                                    key={t.name}
+                                    key={t.id}
                                     data-reveal
                                     className="pf-testi"
                                 >
@@ -1021,10 +918,10 @@ export default function Welcome() {
                                         </span>
                                         <span>
                                             <div className="pf-testi-name">
-                                                {t.name}
+                                                {t.authorName}
                                             </div>
                                             <div className="pf-testi-role">
-                                                {t.role}
+                                                {t.authorRole}
                                             </div>
                                         </span>
                                     </figcaption>
@@ -1055,10 +952,10 @@ export default function Welcome() {
                                 a day.
                             </p>
                             <a
-                                href="mailto:hello@rizki.dev"
+                                href={`mailto:${contactEmail}`}
                                 className="pf-email-link"
                             >
-                                hello@rizki.dev
+                                {contactEmail}
                             </a>
                             <div className="pf-contact-badge">
                                 <span className="pf-badge-dot" />
@@ -1067,8 +964,8 @@ export default function Welcome() {
                             <div className="pf-socials">
                                 {socials.map((s) => (
                                     <a
-                                        key={s.label}
-                                        href={s.href}
+                                        key={s.id}
+                                        href={s.url}
                                         className="pf-social"
                                     >
                                         <span className="pf-social-label">
@@ -1167,8 +1064,8 @@ export default function Welcome() {
                                 <div className="pf-footer-links">
                                     {socials.map((s) => (
                                         <a
-                                            key={s.label}
-                                            href={s.href}
+                                            key={s.id}
+                                            href={s.url}
                                             className="pf-footer-link"
                                         >
                                             {s.label}
