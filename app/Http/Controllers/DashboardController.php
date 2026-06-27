@@ -7,6 +7,7 @@ use App\Models\ContactMessage;
 use App\Models\Project;
 use App\Models\Testimonial;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -54,6 +55,7 @@ class DashboardController extends Controller
             'messages' => $messages->map(fn (ContactMessage $message): array => $this->transformMessage($message))->all(),
             'projects' => $projects->map(fn (Project $project): array => $this->transformProject($project))->all(),
             'testimonials' => $testimonials->map(fn (Testimonial $testimonial): array => [
+                'id' => $testimonial->id,
                 'name' => $testimonial->author_name,
                 'role' => $testimonial->author_role,
                 'initials' => $this->initials($testimonial->author_name),
@@ -102,12 +104,21 @@ class DashboardController extends Controller
     private function transformProject(Project $project): array
     {
         return [
+            'id' => $project->id,
             'name' => $project->title,
             'mono' => $this->initials($project->title),
             'category' => $project->category,
             'status' => $project->status->label(),
             'views' => $project->views > 0 ? number_format($project->views) : '—',
             'updated' => $project->updated_at?->diffForHumans() ?? '',
+            // Raw values for the edit form.
+            'title' => $project->title,
+            'year' => $project->year,
+            'description' => $project->description,
+            'tags' => $project->tags ?? [],
+            'statusValue' => $project->status->value,
+            'sortOrder' => $project->sort_order,
+            'imageUrl' => $project->image_path ? Storage::disk('public')->url($project->image_path) : null,
         ];
     }
 

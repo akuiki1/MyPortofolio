@@ -1,14 +1,16 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { LogOut, Settings as SettingsIcon } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties, FormEvent, ReactNode } from 'react';
 import {
-    useEffect,
-    useMemo,
-    useRef,
-    useState
-    
-    
-} from 'react';
-import type {CSSProperties, ReactNode} from 'react';
+    destroy as destroyProject,
+    store as storeProject,
+    update as updateProject,
+} from '@/actions/App/Http/Controllers/Admin/ProjectController';
+import {
+    destroy as destroyTestimonial,
+    update as updateTestimonial,
+} from '@/actions/App/Http/Controllers/Admin/TestimonialController';
 import { logout } from '@/routes';
 import '../../css/dashboard.css';
 
@@ -145,7 +147,6 @@ type Message = {
     body2: string;
 };
 
-
 const badgeFor = (s: Message['status']) => {
     if (s === 'new') {
         return { label: 'New', color: C.neon, bg: 'rgba(0,255,133,.1)' };
@@ -185,8 +186,6 @@ const activity = [
         color: C.neon,
     },
 ];
-
-
 
 const analyticsStats = [
     {
@@ -453,15 +452,24 @@ const viewIcons: Record<ViewName, ReactNode> = {
 /* ------------------------------------------------------------- component --- */
 
 interface ProjectRow {
+    id: number;
     name: string;
     mono: string;
     category: string;
     status: 'Published' | 'Draft';
     views: string;
     updated: string;
+    title: string;
+    year: string | null;
+    description: string | null;
+    tags: string[];
+    statusValue: 'draft' | 'published';
+    sortOrder: number;
+    imageUrl: string | null;
 }
 
 interface TestimonialRow {
+    id: number;
     name: string;
     role: string;
     initials: string;
@@ -523,10 +531,27 @@ export default function Dashboard({
     const [availability, setAvailability] = useState(true);
     const [accent, setAccent] = useState('#00ff85');
     const [prefs, setPrefs] = useState(() => initialPrefs.map((p) => p.on));
-    const [approved, setApproved] = useState<Set<string>>(
-        () =>
-            new Set(testimonials.filter((t) => !t.pending).map((t) => t.name)),
-    );
+    const [projectModal, setProjectModal] = useState<{
+        open: boolean;
+        editing: ProjectRow | null;
+    }>({ open: false, editing: null });
+    const projectForm = useForm<{
+        title: string;
+        category: string;
+        year: string;
+        status: 'draft' | 'published';
+        description: string;
+        tags: string;
+        image: File | null;
+    }>({
+        title: '',
+        category: '',
+        year: '',
+        status: 'draft',
+        description: '',
+        tags: '',
+        image: null,
+    });
     const [trafficRange, setTrafficRange] = useState('21d');
     const [profileOpen, setProfileOpen] = useState(false);
     const [savedFlash, setSavedFlash] = useState(false);
@@ -574,9 +599,92 @@ export default function Dashboard({
     const mainMargin = isMobile ? 0 : sidebarWidth;
 
     const unreadCount = unread.size;
-    const pendingCount = testimonials.filter(
-        (t) => !approved.has(t.name),
-    ).length;
+    const pendingCount = testimonials.filter((t) => t.pending).length;
+
+    const openCreateProject = () => {
+        projectForm.clearErrors();
+        projectForm.setData({
+            title: '',
+            category: '',
+            year: '',
+            status: 'draft',
+            description: '',
+            tags: '',
+            image: null,
+        });
+        setProjectModal({ open: true, editing: null });
+    };
+
+    const openEditProject = (p: ProjectRow) => {
+        projectForm.clearErrors();
+        projectForm.setData({
+            title: p.title,
+            category: p.category,
+            year: p.year ?? '',
+            status: p.statusValue,
+            description: p.description ?? '',
+            tags: p.tags.join(', '),
+            image: null,
+        });
+        setProjectModal({ open: true, editing: p });
+    };
+
+    const closeProjectModal = () => {
+        setProjectModal({ open: false, editing: null });
+        projectForm.reset();
+        projectForm.clearErrors();
+    };
+
+    const submitProject = (e: FormEvent) => {
+        e.preventDefault();
+
+        projectForm.transform((data) => ({
+            ...data,
+            tags: data.tags
+                .split(',')
+                .map((tag) => tag.trim())
+                .filter(Boolean),
+        }));
+
+        const options = {
+            preserveScroll: true,
+            forceFormData: true,
+            onSuccess: () => closeProjectModal(),
+        };
+
+        if (projectModal.editing) {
+            projectForm.post(
+                updateProject.url(projectModal.editing.id),
+                options,
+            );
+        } else {
+            projectForm.post(storeProject.url(), options);
+        }
+    };
+
+    const deleteProject = (p: ProjectRow) => {
+        if (!window.confirm(`Delete “${p.title}”? This cannot be undone.`)) {
+            return;
+        }
+
+        router.delete(destroyProject.url(p.id), { preserveScroll: true });
+    };
+
+    const approveTestimonial = (t: TestimonialRow) => {
+        router.patch(
+            updateTestimonial.url(t.id),
+            { status: 'approved' },
+            { preserveScroll: true },
+        );
+    };
+
+    const deleteTestimonial = (t: TestimonialRow) => {
+        if (!window.confirm(`Delete the testimonial from ${t.name}?`)) {
+            return;
+        }
+
+        router.delete(destroyTestimonial.url(t.id), { preserveScroll: true });
+    };
 
     const goToView = (next: ViewName) => {
         setView(next);
@@ -653,6 +761,29 @@ export default function Dashboard({
         '--neon': accent,
         '--ink': readableInk(accent),
     } as CSSProperties;
+
+    const fieldLabelStyle: CSSProperties = {
+        display: 'block',
+        fontSize: 12,
+        fontWeight: 600,
+        color: '#a7afa9',
+        marginBottom: 6,
+    };
+    const fieldInputStyle: CSSProperties = {
+        width: '100%',
+        background: '#0c0e0d',
+        border: '1px solid rgba(255,255,255,.1)',
+        borderRadius: 9,
+        color: '#ECEFEC',
+        padding: '10px 12px',
+        fontSize: 14,
+        fontFamily: 'inherit',
+    };
+    const fieldErrorStyle: CSSProperties = {
+        color: C.red,
+        fontSize: 12,
+        marginTop: 5,
+    };
 
     /* --------------------------------------------------------------- views --- */
 
@@ -1009,7 +1140,7 @@ export default function Dashboard({
                             ).map((f) => (
                                 <button
                                     key={f}
-                                    className={`dash-filter${filter === f ? ' is-active' : ''}`}
+                                    className={`dash-filter${filter === f ? 'is-active' : ''}`}
                                     onClick={() => setFilter(f)}
                                 >
                                     {f[0].toUpperCase() + f.slice(1)}
@@ -1025,7 +1156,7 @@ export default function Dashboard({
                             return (
                                 <button
                                     key={m.id}
-                                    className={`dash-msg${selected?.id === m.id ? ' is-selected' : ''}`}
+                                    className={`dash-msg${selected?.id === m.id ? 'is-selected' : ''}`}
                                     onClick={() => openMessage(m.id)}
                                 >
                                     <span className="dash-avatar">
@@ -1236,7 +1367,11 @@ export default function Dashboard({
                         Draft <b className="is-muted">{draftProjects}</b>
                     </span>
                 </div>
-                <button className="dash-new-btn">
+                <button
+                    type="button"
+                    className="dash-new-btn"
+                    onClick={openCreateProject}
+                >
                     <svg {...svgProps(16, 2.4)}>
                         <path d="M12 5v14M5 12h14" />
                     </svg>
@@ -1259,7 +1394,7 @@ export default function Dashboard({
                         : 'rgba(255,255,255,.05)';
 
                     return (
-                        <div key={p.name} className="dash-trow">
+                        <div key={p.id} className="dash-trow">
                             <div className="dash-proj-name-cell">
                                 <span className="dash-proj-mono">{p.mono}</span>
                                 <div style={{ minWidth: 0 }}>
@@ -1284,16 +1419,20 @@ export default function Dashboard({
                             <span className="dash-proj-views">{p.views}</span>
                             <div className="dash-row-actions">
                                 <button
+                                    type="button"
                                     className="dash-row-btn dash-row-btn--edit"
                                     title="Edit"
+                                    onClick={() => openEditProject(p)}
                                 >
                                     <svg {...svgProps(15, 1.8)}>
                                         <path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" />
                                     </svg>
                                 </button>
                                 <button
+                                    type="button"
                                     className="dash-row-btn dash-row-btn--del"
                                     title="Delete"
+                                    onClick={() => deleteProject(p)}
                                 >
                                     <svg {...svgProps(15, 1.8)}>
                                         <path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M6 7l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13" />
@@ -1330,12 +1469,12 @@ export default function Dashboard({
             </div>
             <div className="dash-testi-grid">
                 {testimonials.map((t) => {
-                    const isApproved = approved.has(t.name);
+                    const isApproved = !t.pending;
 
                     return (
                         <figure
-                            key={t.name}
-                            className={`dash-testi${isApproved ? '' : ' is-pending'}`}
+                            key={t.id}
+                            className={`dash-testi${isApproved ? '' : 'is-pending'}`}
                         >
                             <div className="dash-testi-top">
                                 <span className="dash-testi-quote-mark">
@@ -1380,21 +1519,19 @@ export default function Dashboard({
                             </figcaption>
                             <div className="dash-testi-actions">
                                 <button
-                                    className={`dash-approve${isApproved ? ' is-approved' : ''}`}
+                                    type="button"
+                                    className={`dash-approve${isApproved ? 'is-approved' : ''}`}
                                     disabled={isApproved}
-                                    onClick={() =>
-                                        setApproved((prev) => {
-                                            const next = new Set(prev);
-
-                                            next.add(t.name);
-
-                                            return next;
-                                        })
-                                    }
+                                    onClick={() => approveTestimonial(t)}
                                 >
                                     {isApproved ? 'Approved ✓' : 'Approve'}
                                 </button>
-                                <button className="dash-del-btn" title="Delete">
+                                <button
+                                    type="button"
+                                    className="dash-del-btn"
+                                    title="Delete"
+                                    onClick={() => deleteTestimonial(t)}
+                                >
                                     <svg {...svgProps(15, 1.8)}>
                                         <path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M6 7l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13" />
                                     </svg>
@@ -1611,7 +1748,7 @@ export default function Dashboard({
                                         role="switch"
                                         aria-checked={prefs[i]}
                                         aria-label={pr.label}
-                                        className={`dash-switch dash-switch--pref${prefs[i] ? ' is-on' : ''}`}
+                                        className={`dash-switch dash-switch--pref${prefs[i] ? 'is-on' : ''}`}
                                         onClick={() =>
                                             setPrefs((prev) =>
                                                 prev.map((v, j) =>
@@ -1640,7 +1777,7 @@ export default function Dashboard({
                             {accents.map((ac) => (
                                 <button
                                     key={ac}
-                                    className={`dash-accent-sw${accent === ac ? ' is-active' : ''}`}
+                                    className={`dash-accent-sw${accent === ac ? 'is-active' : ''}`}
                                     style={{ background: ac }}
                                     onClick={() => setAccent(ac)}
                                     aria-label={`Accent ${ac}`}
@@ -1738,7 +1875,7 @@ export default function Dashboard({
             {head}
             <div className="dash" style={rootStyle}>
                 <div
-                    className={`dash-backdrop${isMobile && navOpen ? ' is-open' : ''}`}
+                    className={`dash-backdrop${isMobile && navOpen ? 'is-open' : ''}`}
                     onClick={() => setNavOpen(false)}
                 />
 
@@ -1773,7 +1910,7 @@ export default function Dashboard({
                         )}
                         {!isMobile && (
                             <button
-                                className={`dash-collapse${collapsed ? ' is-rotated' : ''}`}
+                                className={`dash-collapse${collapsed ? 'is-rotated' : ''}`}
                                 aria-label="Collapse sidebar"
                                 onClick={() => setCollapsedPref((c) => !c)}
                             >
@@ -1806,7 +1943,7 @@ export default function Dashboard({
                                 <button
                                     key={name}
                                     type="button"
-                                    className={`dash-nav-item${isActive ? ' is-active' : ''}`}
+                                    className={`dash-nav-item${isActive ? 'is-active' : ''}`}
                                     title={viewLabels[name]}
                                     onClick={() => goToView(name)}
                                 >
@@ -1819,7 +1956,7 @@ export default function Dashboard({
                                     )}
                                     {showLabels && badge && (
                                         <span
-                                            className={`dash-nav-badge${badge.amber ? ' dash-nav-badge--amber' : ''}`}
+                                            className={`dash-nav-badge${badge.amber ? 'dash-nav-badge--amber' : ''}`}
                                         >
                                             {badge.text}
                                         </span>
@@ -1834,7 +1971,7 @@ export default function Dashboard({
                             <div className="dash-avail-row">
                                 <span className="dash-avail-name">
                                     <span
-                                        className={`dash-avail-dot${availability ? '' : ' is-off'}`}
+                                        className={`dash-avail-dot${availability ? '' : 'is-off'}`}
                                     />
                                     {showLabels && (
                                         <span>
@@ -1849,7 +1986,7 @@ export default function Dashboard({
                                     role="switch"
                                     aria-checked={availability}
                                     aria-label="Toggle availability"
-                                    className={`dash-switch${availability ? ' is-on' : ''}`}
+                                    className={`dash-switch${availability ? 'is-on' : ''}`}
                                     onClick={() => setAvailability((a) => !a)}
                                 >
                                     <span className="dash-switch-knob" />
@@ -1889,7 +2026,7 @@ export default function Dashboard({
                 <div className="dash-main" style={{ marginLeft: mainMargin }}>
                     <header className="dash-topbar">
                         <button
-                            className={`dash-hamburger${isMobile ? ' is-visible' : ''}`}
+                            className={`dash-hamburger${isMobile ? 'is-visible' : ''}`}
                             aria-label="Open menu"
                             onClick={() => setNavOpen(true)}
                         >
@@ -2003,6 +2140,224 @@ export default function Dashboard({
 
                     <main className="dash-content">{renderView(view)}</main>
                 </div>
+
+                {projectModal.open && (
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        onClick={closeProjectModal}
+                        style={{
+                            position: 'fixed',
+                            inset: 0,
+                            zIndex: 80,
+                            background: 'rgba(0,0,0,.62)',
+                            backdropFilter: 'blur(4px)',
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            justifyContent: 'center',
+                            padding: '6vh 16px',
+                            overflowY: 'auto',
+                        }}
+                    >
+                        <form
+                            onClick={(e) => e.stopPropagation()}
+                            onSubmit={submitProject}
+                            className="dash-card"
+                            style={{
+                                width: '100%',
+                                maxWidth: 540,
+                                padding: 24,
+                            }}
+                        >
+                            <h2
+                                className="dash-h2"
+                                style={{ marginBottom: 18 }}
+                            >
+                                {projectModal.editing
+                                    ? 'Edit project'
+                                    : 'New project'}
+                            </h2>
+
+                            <div style={{ marginBottom: 14 }}>
+                                <label style={fieldLabelStyle}>Title</label>
+                                <input
+                                    type="text"
+                                    value={projectForm.data.title}
+                                    onChange={(e) =>
+                                        projectForm.setData(
+                                            'title',
+                                            e.target.value,
+                                        )
+                                    }
+                                    style={fieldInputStyle}
+                                />
+                                {projectForm.errors.title && (
+                                    <div style={fieldErrorStyle}>
+                                        {projectForm.errors.title}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 110px',
+                                    gap: 12,
+                                    marginBottom: 14,
+                                }}
+                            >
+                                <div>
+                                    <label style={fieldLabelStyle}>
+                                        Category
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={projectForm.data.category}
+                                        onChange={(e) =>
+                                            projectForm.setData(
+                                                'category',
+                                                e.target.value,
+                                            )
+                                        }
+                                        style={fieldInputStyle}
+                                    />
+                                    {projectForm.errors.category && (
+                                        <div style={fieldErrorStyle}>
+                                            {projectForm.errors.category}
+                                        </div>
+                                    )}
+                                </div>
+                                <div>
+                                    <label style={fieldLabelStyle}>Year</label>
+                                    <input
+                                        type="text"
+                                        maxLength={4}
+                                        value={projectForm.data.year}
+                                        onChange={(e) =>
+                                            projectForm.setData(
+                                                'year',
+                                                e.target.value,
+                                            )
+                                        }
+                                        style={fieldInputStyle}
+                                    />
+                                    {projectForm.errors.year && (
+                                        <div style={fieldErrorStyle}>
+                                            {projectForm.errors.year}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div style={{ marginBottom: 14 }}>
+                                <label style={fieldLabelStyle}>Status</label>
+                                <select
+                                    value={projectForm.data.status}
+                                    onChange={(e) =>
+                                        projectForm.setData(
+                                            'status',
+                                            e.target.value as
+                                                | 'draft'
+                                                | 'published',
+                                        )
+                                    }
+                                    style={fieldInputStyle}
+                                >
+                                    <option value="draft">Draft</option>
+                                    <option value="published">Published</option>
+                                </select>
+                            </div>
+
+                            <div style={{ marginBottom: 14 }}>
+                                <label style={fieldLabelStyle}>
+                                    Description
+                                </label>
+                                <textarea
+                                    rows={3}
+                                    value={projectForm.data.description}
+                                    onChange={(e) =>
+                                        projectForm.setData(
+                                            'description',
+                                            e.target.value,
+                                        )
+                                    }
+                                    style={{
+                                        ...fieldInputStyle,
+                                        resize: 'vertical',
+                                    }}
+                                />
+                                {projectForm.errors.description && (
+                                    <div style={fieldErrorStyle}>
+                                        {projectForm.errors.description}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div style={{ marginBottom: 14 }}>
+                                <label style={fieldLabelStyle}>
+                                    Tags (comma separated)
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="React, Laravel, MySQL"
+                                    value={projectForm.data.tags}
+                                    onChange={(e) =>
+                                        projectForm.setData(
+                                            'tags',
+                                            e.target.value,
+                                        )
+                                    }
+                                    style={fieldInputStyle}
+                                />
+                            </div>
+
+                            <div style={{ marginBottom: 20 }}>
+                                <label style={fieldLabelStyle}>
+                                    Image{' '}
+                                    {projectModal.editing?.imageUrl &&
+                                        '(leave empty to keep current)'}
+                                </label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) =>
+                                        projectForm.setData(
+                                            'image',
+                                            e.target.files?.[0] ?? null,
+                                        )
+                                    }
+                                    style={{ ...fieldInputStyle, padding: 8 }}
+                                />
+                                {projectForm.errors.image && (
+                                    <div style={fieldErrorStyle}>
+                                        {projectForm.errors.image}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div style={{ display: 'flex', gap: 10 }}>
+                                <button
+                                    type="submit"
+                                    className="dash-btn-primary"
+                                    disabled={projectForm.processing}
+                                >
+                                    {projectForm.processing
+                                        ? 'Saving…'
+                                        : projectModal.editing
+                                          ? 'Save changes'
+                                          : 'Create project'}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="dash-btn-ghost"
+                                    onClick={closeProjectModal}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                )}
             </div>
         </>
     );
