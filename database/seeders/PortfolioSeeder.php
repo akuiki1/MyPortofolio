@@ -137,15 +137,16 @@ class PortfolioSeeder extends Seeder
     private function seedTestimonials(): void
     {
         $testimonials = [
-            ['author_name' => 'Sarah Lin', 'author_role' => 'Founder, Brightwave', 'quote' => 'Rizki turned our outdated site into a fast, modern platform. Conversions jumped 40% within two months.'],
-            ['author_name' => 'Andre Pratama', 'author_role' => 'CTO, Lumina', 'quote' => 'Clean code, clear communication, and delivered ahead of schedule. Exactly the developer you hope to find.'],
-            ['author_name' => 'Maria Gomez', 'author_role' => 'PM, Verde Finance', 'quote' => 'He understood our product better than we did. The new dashboard is genuinely a joy to use.'],
+            ['author_name' => 'Sarah Lin', 'author_role' => 'Founder, Brightwave', 'quote' => 'Rizki turned our outdated site into a fast, modern platform. Conversions jumped 40% within two months.', 'status' => TestimonialStatus::Approved],
+            ['author_name' => 'Andre Pratama', 'author_role' => 'CTO, Lumina', 'quote' => 'Clean code, clear communication, and delivered ahead of schedule. Exactly the developer you hope to find.', 'status' => TestimonialStatus::Approved],
+            ['author_name' => 'Maria Gomez', 'author_role' => 'PM, Verde Finance', 'quote' => 'He understood our product better than we did. The new dashboard is genuinely a joy to use.', 'status' => TestimonialStatus::Approved],
+            ['author_name' => 'Tom Becker', 'author_role' => 'Creative Director, Orbit', 'quote' => 'The launch animation Rizki built got more comments than the product itself. Incredible attention to detail.', 'status' => TestimonialStatus::Pending],
         ];
 
         foreach ($testimonials as $i => $testimonial) {
             Testimonial::query()->updateOrCreate(
                 ['author_name' => $testimonial['author_name']],
-                [...$testimonial, 'status' => TestimonialStatus::Approved, 'sort_order' => $i],
+                [...$testimonial, 'sort_order' => $i],
             );
         }
     }

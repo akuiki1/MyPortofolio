@@ -145,125 +145,6 @@ type Message = {
     body2: string;
 };
 
-const messages: Message[] = [
-    {
-        id: 'm1',
-        name: 'Sarah Lin',
-        email: 'sarah@brightwave.co',
-        initials: 'SL',
-        time: '12m',
-        starred: true,
-        status: 'new',
-        preview:
-            'Looking to redesign our marketing site — saw the Orbit build and loved it.',
-        project: 'Marketing redesign',
-        budget: '$8–12k',
-        timeline: '6 weeks',
-        received: 'TODAY, 9:42 AM',
-        body: "Hi Rizki — I'm the founder of Brightwave. We're a B2B SaaS company and our current marketing site is starting to hold us back. After seeing the Orbit Studio project in your portfolio, I knew I had to reach out.",
-        body2: "We'd love a full redesign with a focus on conversion and speed. Do you have availability to start within the next month? Happy to share our brand guidelines and current analytics.",
-    },
-    {
-        id: 'm2',
-        name: 'Andre Pratama',
-        email: 'andre@lumina.io',
-        initials: 'AP',
-        time: '1h',
-        starred: false,
-        status: 'new',
-        preview:
-            'Our dashboard is getting slow at scale. Can you help profile and fix it?',
-        project: 'Performance audit',
-        budget: '$5k',
-        timeline: '2 weeks',
-        received: 'TODAY, 8:15 AM',
-        body: 'Hey Rizki, we met briefly at the React meetup. Our analytics dashboard (the one you actually built the first version of!) has grown a lot and is now noticeably sluggish with large datasets.',
-        body2: 'Would you be open to a focused performance audit — profiling, identifying bottlenecks, and implementing the top fixes? Two-week engagement ideally.',
-    },
-    {
-        id: 'm3',
-        name: 'Maria Gomez',
-        email: 'maria@verde.finance',
-        initials: 'MG',
-        time: '3h',
-        starred: true,
-        status: 'replied',
-        preview:
-            'Ready to kick off phase 2 of the finance app whenever you are.',
-        project: 'Verde phase 2',
-        budget: '$15k+',
-        timeline: 'Q3',
-        received: 'TODAY, 6:30 AM',
-        body: "Hi Rizki! Phase 1 has been performing beautifully — the team is thrilled and our users keep complimenting the new dashboard. We're ready to move on phase 2 whenever your calendar allows.",
-        body2: "Scope is roughly: budgeting tools, a savings-goals module, and a couple of new bank integrations. Let's set up a kickoff call this week?",
-    },
-    {
-        id: 'm4',
-        name: 'Tom Becker',
-        email: 'tom@orbit.studio',
-        initials: 'TB',
-        time: '1d',
-        starred: false,
-        status: 'open',
-        preview:
-            'Need a WebGL hero animation for a product launch. Tight deadline.',
-        project: 'Launch animation',
-        budget: '$4k',
-        timeline: '10 days',
-        received: 'YESTERDAY, 4:12 PM',
-        body: 'Rizki — big fan of your motion work. We have a product launch in just under two weeks and need a standout WebGL hero animation for the landing page. I know the timeline is tight.',
-        body2: 'Is this something you could squeeze in? We have the creative direction locked, just need the engineering muscle to bring it to life smoothly across devices.',
-    },
-    {
-        id: 'm5',
-        name: 'Priya Nair',
-        email: 'priya@pulsefit.app',
-        initials: 'PN',
-        time: '1d',
-        starred: false,
-        status: 'open',
-        preview: 'Offline mode has a sync bug on iOS — repro steps attached.',
-        project: 'PWA bugfix',
-        budget: 'Hourly',
-        timeline: 'ASAP',
-        received: 'YESTERDAY, 11:03 AM',
-        body: "Hi Rizki, the Pulse Fitness PWA you built has been rock solid, but we've started getting reports of a sync bug in offline mode on iOS — workouts logged offline occasionally don't reconcile when the device comes back online.",
-        body2: "I've attached detailed repro steps and a few user reports. Could you take a look this week on an hourly basis? It's becoming a support headache.",
-    },
-    {
-        id: 'm6',
-        name: 'David Kim',
-        email: 'david@nexus.shop',
-        initials: 'DK',
-        time: '2d',
-        starred: false,
-        status: 'replied',
-        preview: 'Can you quote a new checkout flow with Apple Pay support?',
-        project: 'Checkout v2',
-        budget: '$9k',
-        timeline: '5 weeks',
-        received: '2 DAYS AGO',
-        body: "Hi Rizki, Nexus Commerce has grown a lot since launch and we're ready to rebuild the checkout. We want a faster, single-page flow with Apple Pay and Google Pay support, plus better address validation.",
-        body2: 'Could you put together a quote and rough timeline? Five weeks would be ideal but we have some flexibility for the right outcome.',
-    },
-    {
-        id: 'm7',
-        name: 'Lena Vogt',
-        email: 'lena@wander.travel',
-        initials: 'LV',
-        time: '3d',
-        starred: true,
-        status: 'open',
-        preview:
-            'Want to add a live availability calendar to the booking flow.',
-        project: 'Booking calendar',
-        budget: '$6k',
-        timeline: '4 weeks',
-        received: '3 DAYS AGO',
-        body: 'Hi Rizki — Wander has been doing great and we want to level up the booking experience with a live availability calendar so travelers can see real-time openings before they commit.',
-        body2: 'It would need to sync with our existing inventory API. Is a four-week build realistic? Would love your thoughts on the approach.',
-    },
-];
 
 const badgeFor = (s: Message['status']) => {
     if (s === 'new') {
@@ -305,87 +186,7 @@ const activity = [
     },
 ];
 
-const projects = [
-    {
-        name: 'Nexus Commerce',
-        mono: 'NC',
-        category: 'E-Commerce',
-        status: 'Published',
-        views: '2,140',
-        updated: '2 days ago',
-    },
-    {
-        name: 'Lumina Analytics',
-        mono: 'LA',
-        category: 'SaaS Dashboard',
-        status: 'Published',
-        views: '1,870',
-        updated: '5 days ago',
-    },
-    {
-        name: 'Wander',
-        mono: 'WD',
-        category: 'Travel Booking',
-        status: 'Published',
-        views: '1,500',
-        updated: '1 week ago',
-    },
-    {
-        name: 'Pulse Fitness',
-        mono: 'PF',
-        category: 'Health & Fitness',
-        status: 'Published',
-        views: '1,180',
-        updated: '2 weeks ago',
-    },
-    {
-        name: 'Orbit Studio',
-        mono: 'OS',
-        category: 'Agency Site',
-        status: 'Published',
-        views: '1,500',
-        updated: '1 month ago',
-    },
-    {
-        name: 'Verde Finance',
-        mono: 'VF',
-        category: 'Fintech',
-        status: 'Draft',
-        views: '—',
-        updated: '3 weeks ago',
-    },
-];
 
-const testimonials = [
-    {
-        name: 'Sarah Lin',
-        role: 'Founder, Brightwave',
-        initials: 'SL',
-        quote: 'Rizki turned our outdated site into a fast, modern platform. Conversions jumped 40% within two months.',
-        pending: false,
-    },
-    {
-        name: 'Andre Pratama',
-        role: 'CTO, Lumina',
-        initials: 'AP',
-        quote: 'Clean code, clear communication, and delivered ahead of schedule. Exactly the developer you hope to find.',
-        pending: false,
-    },
-    {
-        name: 'Maria Gomez',
-        role: 'PM, Verde Finance',
-        initials: 'MG',
-        quote: 'He understood our product better than we did. The new dashboard is genuinely a joy to use.',
-        pending: false,
-    },
-    {
-        name: 'Tom Becker',
-        role: 'Creative Director, Orbit',
-        initials: 'TB',
-        quote: 'The launch animation Rizki built got more comments than the product itself. Incredible attention to detail.',
-        pending: true,
-    },
-];
 
 const analyticsStats = [
     {
@@ -651,10 +452,55 @@ const viewIcons: Record<ViewName, ReactNode> = {
 
 /* ------------------------------------------------------------- component --- */
 
-export default function Dashboard() {
+interface ProjectRow {
+    name: string;
+    mono: string;
+    category: string;
+    status: 'Published' | 'Draft';
+    views: string;
+    updated: string;
+}
+
+interface TestimonialRow {
+    name: string;
+    role: string;
+    initials: string;
+    quote: string;
+    pending: boolean;
+}
+
+interface DashboardProps {
+    messages: Message[];
+    projects: ProjectRow[];
+    testimonials: TestimonialRow[];
+    metrics: { messages: number; projectViews: number };
+}
+
+export default function Dashboard({
+    messages,
+    projects,
+    testimonials,
+    metrics,
+}: DashboardProps) {
     const user = usePage().props.auth.user;
     const exportMode = Boolean(usePage().props.exportMode);
     const firstName = (user?.name || 'Rizki').split(' ')[0];
+
+    const totalProjects = projects.length;
+    const publishedProjects = projects.filter(
+        (p) => p.status === 'Published',
+    ).length;
+    const draftProjects = totalProjects - publishedProjects;
+
+    // Real KPI values where we have them; traffic metrics stay illustrative
+    // until visit tracking lands.
+    const overview = overviewStats.map((stat) =>
+        stat.label === 'Messages'
+            ? { ...stat, value: metrics.messages }
+            : stat.label === 'Project views'
+              ? { ...stat, value: metrics.projectViews }
+              : stat,
+    );
 
     const [view, setView] = useState<ViewName>('overview');
     const [collapsedPref, setCollapsedPref] = useState(false);
@@ -665,9 +511,12 @@ export default function Dashboard() {
     const [filter, setFilter] = useState<
         'all' | 'unread' | 'starred' | 'replied'
     >('all');
-    const [selectedId, setSelectedId] = useState('m1');
+    const [selectedId, setSelectedId] = useState(() => messages[0]?.id ?? '');
     const [unread, setUnread] = useState<Set<string>>(
-        () => new Set(['m1', 'm2', 'm5']),
+        () =>
+            new Set(
+                messages.filter((m) => m.status === 'new').map((m) => m.id),
+            ),
     );
     const [replySent, setReplySent] = useState(false);
 
@@ -762,7 +611,7 @@ export default function Dashboard() {
 
             return okFilter && okQuery;
         });
-    }, [filter, search, unread]);
+    }, [filter, messages, search, unread]);
 
     const selected =
         visibleMessages.find((m) => m.id === selectedId) ?? visibleMessages[0];
@@ -810,7 +659,7 @@ export default function Dashboard() {
     const renderOverview = () => (
         <section key="overview" className="dash-panel">
             <div className="dash-stats">
-                {overviewStats.map((stat) => (
+                {overview.map((stat) => (
                     <div key={stat.label} className="dash-stat">
                         <div className="dash-stat-top">
                             <div>
@@ -1378,13 +1227,13 @@ export default function Dashboard() {
             <div className="dash-toolbar">
                 <div className="dash-counts">
                     <span className="dash-count-chip">
-                        Total <b>6</b>
+                        Total <b>{totalProjects}</b>
                     </span>
                     <span className="dash-count-chip">
-                        Published <b>5</b>
+                        Published <b>{publishedProjects}</b>
                     </span>
                     <span className="dash-count-chip">
-                        Draft <b className="is-muted">1</b>
+                        Draft <b className="is-muted">{draftProjects}</b>
                     </span>
                 </div>
                 <button className="dash-new-btn">

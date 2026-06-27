@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\PortfolioSeeder;
 use Inertia\Testing\AssertableInertia;
 
 test('guests are redirected to the login page', function () {
@@ -20,6 +21,22 @@ test('admin users can visit the dashboard', function () {
     $this->get(route('dashboard'))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page->component('dashboard'));
+});
+
+test('the dashboard exposes seeded content to the admin', function () {
+    $this->seed(PortfolioSeeder::class);
+    $this->actingAs(User::factory()->admin()->create());
+
+    $this->get(route('dashboard'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('dashboard')
+            ->where('exportMode', false)
+            ->has('projects', 6)
+            ->has('messages', 7)
+            ->has('testimonials', 4)
+            ->where('metrics.messages', 7)
+            ->where('metrics.projectViews', 8190));
 });
 
 test('guests cannot visit the print view', function () {
