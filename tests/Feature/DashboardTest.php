@@ -8,9 +8,14 @@ test('guests are redirected to the login page', function () {
     $response->assertRedirect(route('login'));
 });
 
-test('authenticated users can visit the dashboard', function () {
-    $user = User::factory()->create();
-    $this->actingAs($user);
+test('non-admin users cannot visit the dashboard', function () {
+    $this->actingAs(User::factory()->create());
+
+    $this->get(route('dashboard'))->assertForbidden();
+});
+
+test('admin users can visit the dashboard', function () {
+    $this->actingAs(User::factory()->admin()->create());
 
     $this->get(route('dashboard'))
         ->assertOk()
@@ -21,9 +26,14 @@ test('guests cannot visit the print view', function () {
     $this->get(route('dashboard.print'))->assertRedirect(route('login'));
 });
 
+test('non-admin users cannot visit the print view', function () {
+    $this->actingAs(User::factory()->create());
+
+    $this->get(route('dashboard.print'))->assertForbidden();
+});
+
 test('the print view renders all dashboard views in export mode', function () {
-    $user = User::factory()->create();
-    $this->actingAs($user);
+    $this->actingAs(User::factory()->admin()->create());
 
     $this->get(route('dashboard.print'))
         ->assertOk()
